@@ -15,9 +15,6 @@ from message_handlers.project_note_message_handler import (
 )
 
 
-TOKEN = "8348316463:AAGd3hDSSkCIBz_y66erFlW3Br58CrXw9RI"
-
-
 async def help_command(
 	update: Update,
 	context: ContextTypes.DEFAULT_TYPE,
@@ -41,8 +38,8 @@ async def set_commands(app):
     await app.bot.set_my_commands(commands)
 
 
-def main():
-	app: Application = Application.builder().token(TOKEN).build()
+def main(token: str):
+	app: Application = Application.builder().token(token).build()
 
 	app.add_handler(CommandHandler("help", help_command))
 
@@ -82,4 +79,6 @@ def main():
 	app.run_polling()
 
 if __name__ == "__main__":
-	main()
+	with open("tg_token.txt", "r") as f:
+		token = f.read().strip()
+	main(token=token)

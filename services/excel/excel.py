@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, NamedTuple
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel
@@ -13,12 +13,51 @@ class ProjectInfo(BaseModel):
     def get_sheetname(self):
         return f"{{{self.ticket}}} {self.title}"
 
+MAX_NOTE_LENGTH = 50
+
+class ProjectNote(NamedTuple):
+    note: Optional[str]
+    status: Optional[str]
+    extra_info: Optional[str]
+    created_at: Optional[datetime.datetime | str]
+    row: int
+
+    @property
+    def cut_note(self) -> str:
+        if not self.note:
+            return f"{self.row}:"
+        if len(self.note) <= MAX_NOTE_LENGTH:
+            return f"{self.row}: {self.note}"
+        return f"{self.row}: {self.note[:MAX_NOTE_LENGTH]}..."
+
 
 NEW_NOTE_ROW_NUMBER = 2
 
 class ExcelSheet:
     def __init__(self, sheet: Worksheet):
         self.sheet = sheet
+
+    def get_pending_notes(self) -> list[ProjectNote]:
+        notes = []
+        for i, sheet_row in enumerate(self.sheet.iter_rows(max_col=4, values_only=True)):
+            note = ProjectNote(
+                *sheet_row,
+                row=i + 1,
+            )
+            if note.status and note.status.lower() == "pending":
+                notes.append(note)
+        return notes
+
+    def resolve_note(
+        self,
+        note: str,
+        note_row: int,
+    ):
+        status_cell = self.sheet.cell(
+            row=note_row,
+            column=2,
+        )
+        status_cell.value = "Completed"
 
     def insert_row(
         self,
@@ -98,6 +137,20 @@ class Projects:
             project.get_sheetname()
             for project in self.get_all_projects_info()
         ]
+
+    def find_project_sheet_by_name(self, project_name: str) -> Optional[ExcelSheet]:
+        project_sheetname = next(
+            (
+                sheetname
+                for sheetname in self.get_all_project_sheetnames()
+                if project_name.lower() in sheetname.lower()
+            ),
+            None,
+        )
+        if not project_sheetname:
+            print(f"No Ticket In Projects Sheet: {project_name}")
+            return
+        return self._excel_table.get_or_create_sheet(project_name)
 
     def has_project(self, project_name: str) -> bool:
         return any(
@@ -185,3 +238,24 @@ class Projects:
             array=[ticket_name, ticket]
         )
         self.save()
+
+    def get_pending_notes(self, project_name: str) -> list[ProjectNote]:
+        project_excel_sheet = self.find_project_sheet_by_name(project_name=project_name)
+        if not project_excel_sheet:
+            raise Exception(f"No such project {project_name}")
+        return project_excel_sheet.get_pending_notes()
+
+    def resolve_note(
+        self,
+        project_name: str,
+        note: str,
+        note_row: int,
+    ):
+        project_excel_sheet = self.find_project_sheet_by_name(project_name=project_name)
+        if not project_excel_sheet:
+            raise Exception(f"No such project {project_name}")
+        project_excel_sheet.resolve_note(
+            note=note,
+            note_row=note_row,
+        )
+        self._excel_table.save()

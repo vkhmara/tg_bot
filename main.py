@@ -1,7 +1,7 @@
 import asyncio
 from telegram.ext import Application
 from message_handlers import get_all_message_handlers
-from message_handlers.bot_handler import GeneralBotHandler
+from message_handlers.base import set_commands
 from utilities.list import join_lists
 
 
@@ -14,9 +14,9 @@ def main(token: str):
             message_handler.get_handlers() for message_handler in message_handlers
         )
     )
-    asyncio.get_event_loop().run_until_complete(GeneralBotHandler.set_commands(app))
+    asyncio.get_event_loop().run_until_complete(set_commands(app))
     # TODO: investigate why this causes the error
-    # asyncio.run(GeneralBotHandler.set_commands(app))
+    # asyncio.run(set_commands(app))
 
     app.run_polling()
 

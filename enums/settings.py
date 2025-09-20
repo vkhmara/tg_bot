@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class BotCommandType(str, Enum):
     ADD_MULTIPLE_NOTES = "add_multiple_notes"
     ADD_NOTE = "add_note"

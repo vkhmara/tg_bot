@@ -1,11 +1,14 @@
 from enum import Enum
-from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
-    CommandHandler, MessageHandler, ConversationHandler,
-    ContextTypes, filters
+    CommandHandler,
+    ConversationHandler,
+    ContextTypes,
 )
+from exceptions.finish_conversation import FinishConversation
 from services.excel.excel import Projects
 from enums.settings import BotCommandType
+from message_handlers.base import BaseMessageHandler, state_handler
 
 
 class ResolveProjectNoteState(str, Enum):
@@ -13,8 +16,9 @@ class ResolveProjectNoteState(str, Enum):
     PROJECT_NOTE_SELECTING = "project_note_selecting"
 
 
-class ResolveProjectNoteMessageHandler:
+class ResolveProjectNoteMessageHandler(BaseMessageHandler):
     @classmethod
+    @state_handler
     async def start_conversation(
         cls,
         update: Update,
@@ -22,20 +26,20 @@ class ResolveProjectNoteMessageHandler:
     ):
         all_projects_names = Projects().get_all_project_sheetnames()
         if not all_projects_names:
-            await update.message.reply_text("Project list is empty")
-            return ConversationHandler.END
+            raise FinishConversation("Project list is empty")
         markup = ReplyKeyboardMarkup(
-            [
-                [project_name]
-                for project_name in all_projects_names
-            ],
+            [[project_name] for project_name in all_projects_names],
             resize_keyboard=True,
             one_time_keyboard=True,
         )
-        await update.message.reply_text("Choose a note:", reply_markup=markup)
+        await update.message.reply_text(
+            "Choose a project:",
+            reply_markup=markup,
+        )
         return ResolveProjectNoteState.PROJECT_CHOICE
 
     @classmethod
+    @state_handler
     async def choose_project(
         cls,
         update: Update,
@@ -43,24 +47,18 @@ class ResolveProjectNoteMessageHandler:
     ):
         project = update.message.text
         if not Projects().has_project(project):
-            await update.message.reply_text("No such project, try again")
+            await update.message.reply_text("No such project🔪, try again")
             return ResolveProjectNoteState.PROJECT_CHOICE
 
-        try:
-            pending_notes = Projects().get_pending_notes(
-                project_name=project,
-            )
-        except Exception as e:
-            print(e)
-            await update.message.reply_text(f"Something went wrong")
-            return ConversationHandler.END
+        pending_notes = Projects().get_pending_notes(
+            project_name=project,
+        )
+        if not pending_notes:
+            raise FinishConversation("No notes for the project 🤲")
 
         context.user_data["project"] = project
         markup = ReplyKeyboardMarkup(
-            [
-                [note.cut_note]
-                for note in pending_notes
-            ],
+            [[note.cut_note] for note in pending_notes],
             resize_keyboard=True,
             one_time_keyboard=True,
         )
@@ -71,6 +69,7 @@ class ResolveProjectNoteMessageHandler:
         return ResolveProjectNoteState.PROJECT_NOTE_SELECTING
 
     @classmethod
+    @state_handler
     async def resolve_note(
         cls,
         update: Update,
@@ -79,16 +78,11 @@ class ResolveProjectNoteMessageHandler:
         note_row, note = update.message.text.split(": ", maxsplit=1)
         note_row = int(note_row)
 
-        try:
-            Projects().resolve_note(
-                project_name=context.user_data.get("project"),
-                note=note,
-                note_row=note_row,
-            )
-        except Exception as e:
-            print(e)
-            await update.message.reply_text(f"Something went wrong")
-            return ConversationHandler.END
+        Projects().resolve_note(
+            project_name=context.user_data.get("project"),
+            note=note,
+            note_row=note_row,
+        )
 
         await update.message.reply_text(
             "The note was marked as completed ✅",
@@ -97,25 +91,21 @@ class ResolveProjectNoteMessageHandler:
         return ConversationHandler.END
 
     @classmethod
-    async def cancel(
-        cls,
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-    ):
-        await update.message.reply_text("Operation cancelled", reply_markup=ReplyKeyboardRemove())
-        return ConversationHandler.END
-
-    @classmethod
     def get_handlers(cls) -> list:
         return [
             ConversationHandler(
-                entry_points=[CommandHandler(BotCommandType.RESOLVE_NOTE, cls.start_conversation)],
+                entry_points=[
+                    CommandHandler(
+                        BotCommandType.RESOLVE_NOTE,
+                        cls.start_conversation,
+                    )
+                ],
                 states={
                     ResolveProjectNoteState.PROJECT_CHOICE: [
-                        MessageHandler(filters.TEXT & ~filters.COMMAND, cls.choose_project),
+                        cls.get_message_handler(cls.choose_project),
                     ],
                     ResolveProjectNoteState.PROJECT_NOTE_SELECTING: [
-                        MessageHandler(filters.TEXT & ~filters.COMMAND, cls.resolve_note),
+                        cls.get_message_handler(cls.resolve_note),
                     ],
                 },
                 fallbacks=[CommandHandler(BotCommandType.CANCEL, cls.cancel)],

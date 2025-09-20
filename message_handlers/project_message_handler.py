@@ -1,11 +1,13 @@
 from enum import Enum
-from telegram import Update, ReplyKeyboardRemove
+from telegram import Update
 from telegram.ext import (
-    CommandHandler, MessageHandler, ConversationHandler,
-    ContextTypes, filters
+    CommandHandler,
+    ConversationHandler,
+    ContextTypes,
 )
 from services.excel.excel import Projects
 from enums.settings import BotCommandType
+from message_handlers.base import BaseMessageHandler, state_handler
 
 
 class ProjectState(str, Enum):
@@ -13,8 +15,9 @@ class ProjectState(str, Enum):
     TICKET_NAME = "ticket_name"
 
 
-class ProjectMessageHandler:
+class ProjectMessageHandler(BaseMessageHandler):
     @classmethod
+    @state_handler
     async def start_conversation(
         cls,
         update: Update,
@@ -24,6 +27,7 @@ class ProjectMessageHandler:
         return ProjectState.TICKET_NUMBER
 
     @classmethod
+    @state_handler
     async def enter_ticket_number(
         cls,
         update: Update,
@@ -35,6 +39,7 @@ class ProjectMessageHandler:
         return ProjectState.TICKET_NAME
 
     @classmethod
+    @state_handler
     async def enter_ticket_name(
         cls,
         update: Update,
@@ -42,15 +47,10 @@ class ProjectMessageHandler:
     ):
         ticket_number = context.user_data["ticket_number"]
         ticket_name = update.message.text
-        try:
-            Projects().add_project(
-                ticket=ticket_number,
-                ticket_name=ticket_name,
-            )
-        except Exception as e:
-            print(e)
-            await update.message.reply_text("Something went wrong")
-            return ConversationHandler.END
+        Projects().add_project(
+            ticket=ticket_number,
+            ticket_name=ticket_name,
+        )
         await update.message.reply_text(
             f"New project *{ticket_name}* with ticket *{ticket_number}* saved ✅",
             parse_mode="Markdown",
@@ -58,25 +58,21 @@ class ProjectMessageHandler:
         return ConversationHandler.END
 
     @classmethod
-    async def cancel(
-        cls,
-        update: Update,
-        context: ContextTypes.DEFAULT_TYPE,
-    ):
-        await update.message.reply_text("Operation cancelled", reply_markup=ReplyKeyboardRemove())
-        return ConversationHandler.END
-
-    @classmethod
     def get_handlers(cls) -> list:
         return [
             ConversationHandler(
-                entry_points=[CommandHandler(BotCommandType.ADD_PROJECT, cls.start_conversation)],
+                entry_points=[
+                    CommandHandler(
+                        BotCommandType.ADD_PROJECT,
+                        cls.start_conversation,
+                    )
+                ],
                 states={
                     ProjectState.TICKET_NUMBER: [
-                        MessageHandler(filters.TEXT & ~filters.COMMAND, cls.enter_ticket_number),
+                        cls.get_message_handler(cls.enter_ticket_number),
                     ],
                     ProjectState.TICKET_NAME: [
-                        MessageHandler(filters.TEXT & ~filters.COMMAND, cls.enter_ticket_name),
+                        cls.get_message_handler(cls.enter_ticket_name),
                     ],
                 },
                 fallbacks=[CommandHandler(BotCommandType.CANCEL, cls.cancel)],

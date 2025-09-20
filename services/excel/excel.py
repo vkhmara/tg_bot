@@ -1,4 +1,5 @@
 import datetime
+from functools import wraps
 from typing import Optional, NamedTuple
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -13,7 +14,9 @@ class ProjectInfo(BaseModel):
     def get_sheetname(self):
         return f"{{{self.ticket}}} {self.title}"
 
+
 MAX_NOTE_LENGTH = 50
+
 
 class ProjectNote(NamedTuple):
     note: Optional[str]
@@ -33,13 +36,19 @@ class ProjectNote(NamedTuple):
 
 NEW_NOTE_ROW_NUMBER = 2
 
+
 class ExcelSheet:
     def __init__(self, sheet: Worksheet):
         self.sheet = sheet
 
     def get_pending_notes(self) -> list[ProjectNote]:
         notes = []
-        for i, sheet_row in enumerate(self.sheet.iter_rows(max_col=4, values_only=True)):
+        for i, sheet_row in enumerate(
+            self.sheet.iter_rows(
+                max_col=4,
+                values_only=True,
+            )
+        ):
             note = ProjectNote(
                 *sheet_row,
                 row=i + 1,
@@ -102,6 +111,16 @@ class Projects:
     PROJECTS_SHEET_HEADER = ["Project name", "Project ticket(-s)"]
     PROJECT_EXAMPLE_SHEETNAME = "project example"
 
+    def __autosave(func):
+        @wraps(func)
+        def inner(self, *args, **kwargs):
+            return_value = func(self, *args, **kwargs)
+            if hasattr(self, "_save"):
+                self._save()
+            return return_value
+
+        return inner
+
     def __init__(self):
         self.refresh_excel_table()
 
@@ -109,7 +128,7 @@ class Projects:
         settings = Settings()
         self._excel_table = ExcelTable(document_path=settings.settings.document_path)
 
-    def save(self):
+    def _save(self):
         self._excel_table.save()
 
     def _get_example_project_sheet(self) -> ExcelSheet:
@@ -133,10 +152,7 @@ class Projects:
         ]
 
     def get_all_project_sheetnames(self) -> list[str]:
-        return [
-            project.get_sheetname()
-            for project in self.get_all_projects_info()
-        ]
+        return [project.get_sheetname() for project in self.get_all_projects_info()]
 
     def find_project_sheet_by_name(self, project_name: str) -> Optional[ExcelSheet]:
         project_sheetname = next(
@@ -167,17 +183,18 @@ class Projects:
         worksheet = self._excel_table.copy(example_project_sheet.sheet)
         worksheet.title = sheetname
         if commit:
-            self.save()
+            self._save()
         return worksheet
 
+    @__autosave
     def validate_sheets(self):
         sheetnames = self._excel_table.wb.sheetnames
         for project_info in self.get_all_projects_info():
             project_sheetname = project_info.get_sheetname()
             if project_sheetname not in sheetnames:
                 self.create_project_sheet(project_sheetname)
-        self.save()
 
+    @__autosave
     def create_note_sheet(self, ticket: str) -> Optional[ExcelSheet]:
         sheets = [
             x
@@ -192,11 +209,10 @@ class Projects:
         sheetname = sheets[0].get_sheetname()
         excel_sheet = self.create_project_sheet(
             sheetname=sheetname,
-            commit=True,
         )
-        self.save()
         return ExcelSheet(excel_sheet)
 
+    @__autosave
     def add_note(
         self,
         ticket: str,
@@ -206,9 +222,7 @@ class Projects:
         if not ticket:
             raise ValueError(f"`ticket` Cannot Be Falsish")
         sheetnames = [
-            x
-            for x in self._excel_table.wb.sheetnames
-            if ticket.lower() in x.lower()
+            x for x in self._excel_table.wb.sheetnames if ticket.lower() in x.lower()
         ]
         if sheetnames:
             sheetname = sheetnames[0]
@@ -227,17 +241,14 @@ class Projects:
                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             ],
         )
-        self.save()
 
+    @__autosave
     def add_project(
         self,
         ticket: str,
         ticket_name: str,
     ):
-        self.all_projects_sheet.insert_row(
-            array=[ticket_name, ticket]
-        )
-        self.save()
+        self.all_projects_sheet.insert_row(array=[ticket_name, ticket])
 
     def get_pending_notes(self, project_name: str) -> list[ProjectNote]:
         project_excel_sheet = self.find_project_sheet_by_name(project_name=project_name)
@@ -245,6 +256,7 @@ class Projects:
             raise Exception(f"No such project {project_name}")
         return project_excel_sheet.get_pending_notes()
 
+    @__autosave
     def resolve_note(
         self,
         project_name: str,
@@ -258,4 +270,3 @@ class Projects:
             note=note,
             note_row=note_row,
         )
-        self._excel_table.save()

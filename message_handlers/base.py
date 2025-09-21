@@ -1,3 +1,4 @@
+import traceback
 from telegram import BotCommand, Update, ReplyKeyboardRemove
 from telegram.ext import (
     ConversationHandler,
@@ -28,7 +29,7 @@ def state_handler(func):
             )
             return ConversationHandler.END
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             await update.message.reply_text(
                 f"Something went wrong",
                 reply_markup=ReplyKeyboardRemove(),
@@ -40,7 +41,7 @@ def state_handler(func):
 
 class BaseMessageHandler:
     @classmethod
-    def get_message_handler(
+    def _get_message_handler(
         cls,
         state_handler,
     ):
@@ -50,7 +51,7 @@ class BaseMessageHandler:
         )
 
     @classmethod
-    async def cancel(
+    async def _cancel(
         cls,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
@@ -74,7 +75,7 @@ async def set_commands(app):
         BotCommandType.HELP: "Help",
         BotCommandType.CANCEL: "Cancel conversation",
         BotCommandType.PENDING_NOTES: "Pending project notes",
-        BotCommandType.RESOLVE_NOTE: "Mark note as completed",
+        BotCommandType.RESOLVE_NOTE: "Mark note as resolved",
     }
     commands = [
         BotCommand(

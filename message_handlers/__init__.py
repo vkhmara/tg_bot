@@ -1,7 +1,7 @@
 import pkgutil
 import inspect
 import importlib
-from message_handlers.base import BaseMessageHandler, state_handler
+from message_handlers.base import BaseMessageHandler
 
 
 def get_all_message_handlers() -> list[BaseMessageHandler]:

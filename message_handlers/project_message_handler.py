@@ -1,24 +1,20 @@
-from enum import Enum
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import (
     CommandHandler,
     ConversationHandler,
     ContextTypes,
 )
-from services.excel.excel import Projects
+from enums.message_handlers.project import ProjectState
 from enums.settings import BotCommandType
 from message_handlers.base import BaseMessageHandler, state_handler
-
-
-class ProjectState(str, Enum):
-    TICKET_NUMBER = "ticket_number"
-    TICKET_NAME = "ticket_name"
+from services.project.project import add_project
 
 
 class ProjectMessageHandler(BaseMessageHandler):
     @classmethod
     @state_handler
-    async def start_conversation(
+    async def __start_conversation(
         cls,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
@@ -28,7 +24,7 @@ class ProjectMessageHandler(BaseMessageHandler):
 
     @classmethod
     @state_handler
-    async def enter_ticket_number(
+    async def __enter_ticket_number(
         cls,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
@@ -40,20 +36,20 @@ class ProjectMessageHandler(BaseMessageHandler):
 
     @classmethod
     @state_handler
-    async def enter_ticket_name(
+    async def __enter_ticket_name(
         cls,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
     ):
         ticket_number = context.user_data["ticket_number"]
         ticket_name = update.message.text
-        Projects().add_project(
+        add_project(
+            name=ticket_name,
             ticket=ticket_number,
-            ticket_name=ticket_name,
         )
         await update.message.reply_text(
             f"New project *{ticket_name}* with ticket *{ticket_number}* saved ✅",
-            parse_mode="Markdown",
+            parse_mode=ParseMode.MARKDOWN_V2,
         )
         return ConversationHandler.END
 
@@ -64,17 +60,17 @@ class ProjectMessageHandler(BaseMessageHandler):
                 entry_points=[
                     CommandHandler(
                         BotCommandType.ADD_PROJECT,
-                        cls.start_conversation,
+                        cls.__start_conversation,
                     )
                 ],
                 states={
                     ProjectState.TICKET_NUMBER: [
-                        cls.get_message_handler(cls.enter_ticket_number),
+                        cls._get_message_handler(cls.__enter_ticket_number),
                     ],
                     ProjectState.TICKET_NAME: [
-                        cls.get_message_handler(cls.enter_ticket_name),
+                        cls._get_message_handler(cls.__enter_ticket_name),
                     ],
                 },
-                fallbacks=[CommandHandler(BotCommandType.CANCEL, cls.cancel)],
+                fallbacks=[CommandHandler(BotCommandType.CANCEL, cls._cancel)],
             ),
         ]

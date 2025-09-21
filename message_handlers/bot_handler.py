@@ -7,7 +7,7 @@ from message_handlers.base import BaseMessageHandler, state_handler
 class GeneralBotHandler(BaseMessageHandler):
     @classmethod
     @state_handler
-    async def help_command(
+    async def __help_command(
         cls,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
@@ -23,5 +23,5 @@ class GeneralBotHandler(BaseMessageHandler):
     @classmethod
     def get_handlers(cls) -> list:
         return [
-            CommandHandler(BotCommandType.HELP, cls.help_command),
+            CommandHandler(BotCommandType.HELP, cls.__help_command),
         ]

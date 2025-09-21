@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from telegram.ext import Application
 from message_handlers import get_all_message_handlers
 from message_handlers.base import set_commands
@@ -22,6 +23,7 @@ def main(token: str):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     with open("tg_token.txt", "r") as f:
         token = f.read().strip()
     main(token=token)

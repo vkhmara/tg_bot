@@ -19,7 +19,6 @@ from message_handlers.base import BaseMessageHandler, state_handler
 from services.project.project import get_all_project_labels, get_project
 from services.project.project_note import (
     get_project_notes,
-    get_project_notes_result,
     update_project_note,
 )
 

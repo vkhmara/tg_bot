@@ -9,3 +9,4 @@ class BotCommandType(str, Enum):
     HELP = "help"
     PENDING_NOTES = "pending_notes"
     RESOLVE_NOTE = "resolve_note"
+    SCHEDULE_JOBS = "schedule_jobs"

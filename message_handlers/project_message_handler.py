@@ -49,7 +49,7 @@ class ProjectMessageHandler(BaseMessageHandler):
         )
         await update.message.reply_text(
             f"New project *{ticket_name}* with ticket *{ticket_number}* saved ✅",
-            parse_mode=ParseMode.MARKDOWN_V2,
+            parse_mode=ParseMode.MARKDOWN,
         )
         return ConversationHandler.END
 

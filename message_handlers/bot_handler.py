@@ -14,7 +14,7 @@ class GeneralBotHandler(BaseMessageHandler):
     ):
         text = "\n".join(
             [
-                f"/{command_type} - {command_type.replace("_", " ")}"
+                f"/{command_type.value} - {command_type.replace("_", " ")}"
                 for command_type in BotCommandType
             ]
         )
@@ -23,5 +23,5 @@ class GeneralBotHandler(BaseMessageHandler):
     @classmethod
     def get_handlers(cls) -> list:
         return [
-            CommandHandler(BotCommandType.HELP, cls.__help_command),
+            CommandHandler(BotCommandType.HELP.value, cls.__help_command),
         ]

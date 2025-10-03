@@ -107,7 +107,7 @@ class ResolveProjectNoteMessageHandler(BaseMessageHandler):
 
         await query.message.reply_text(
             "The note was marked as resolved ✅",
-            parse_mode=ParseMode.MARKDOWN_V2,
+            parse_mode=ParseMode.MARKDOWN,
         )
         return ConversationHandler.END
 

@@ -59,7 +59,7 @@ class AddProjectNoteMessageHandler(BaseMessageHandler):
         await update.message.reply_text(
             f"Write the note for the project\n*{db_project.project_label}*",
             reply_markup=ReplyKeyboardRemove(),
-            parse_mode=ParseMode.MARKDOWN_V2,
+            parse_mode=ParseMode.MARKDOWN,
         )
         return ProjectNoteState.PROJECT_NOTE_TYPING
 
@@ -82,7 +82,7 @@ class AddProjectNoteMessageHandler(BaseMessageHandler):
         )
         await update.message.reply_text(
             f"Note for project *{project_label}* saved ✅",
-            parse_mode=ParseMode.MARKDOWN_V2,
+            parse_mode=ParseMode.MARKDOWN,
         )
         return (
             ConversationHandler.END

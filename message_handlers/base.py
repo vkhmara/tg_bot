@@ -1,12 +1,13 @@
 import traceback
+from functools import wraps
 from telegram import BotCommand, Update, ReplyKeyboardRemove
+from telegram.constants import ParseMode
 from telegram.ext import (
     ConversationHandler,
     ContextTypes,
     MessageHandler,
     filters,
 )
-from functools import wraps
 from enums.settings import BotCommandType
 from exceptions.finish_conversation import FinishConversation
 
@@ -31,8 +32,9 @@ def state_handler(func):
         except Exception as e:
             traceback.print_exc()
             await update.message.reply_text(
-                f"Something went wrong",
+                f"Something went wrong||\n{e}||",
                 reply_markup=ReplyKeyboardRemove(),
+                parse_mode=ParseMode.MARKDOWN_V2,
             )
             return ConversationHandler.END
 

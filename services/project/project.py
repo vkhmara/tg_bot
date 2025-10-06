@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from databases.base import db_decorator
-from databases.models.project import Project
+from db.base import db_decorator
+from db.models.project import Project
 from enums.project import ProjectFields
 
 

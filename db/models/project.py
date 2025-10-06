@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, JSON
-from databases.base_model import Base
+from db.base_model import Base
 
 
 class Project(Base):

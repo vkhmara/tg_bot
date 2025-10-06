@@ -1,5 +1,5 @@
 from sqlalchemy import func
-from databases.models.project import Project
+from db.models.project import Project
 
 
 class ProjectFields:

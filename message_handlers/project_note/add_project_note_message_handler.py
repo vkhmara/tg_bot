@@ -1,3 +1,4 @@
+from functools import partial
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -6,9 +7,8 @@ from telegram.ext import (
     ContextTypes,
 )
 from enums.message_handlers.add_project_note import ProjectNoteState
-from exceptions.finish_conversation import FinishConversation
-from functools import partial
 from enums.settings import BotCommandType
+from exceptions.finish_conversation import FinishConversation
 from message_handlers.base import BaseMessageHandler, state_handler
 from services.project.project import get_all_project_labels, get_project
 from services.project.project_note import add_project_note

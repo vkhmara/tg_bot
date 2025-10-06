@@ -13,8 +13,8 @@ from telegram.ext import (
 )
 from enums.message_handlers.resolve_project_note import ResolveProjectNoteState
 from enums.project_note import ProjectNoteStatus
-from exceptions.finish_conversation import FinishConversation
 from enums.settings import BotCommandType
+from exceptions.finish_conversation import FinishConversation
 from message_handlers.base import BaseMessageHandler, state_handler
 from services.project.project import get_all_project_labels, get_project
 from services.project.project_note import (

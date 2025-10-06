@@ -1,10 +1,10 @@
-from databases.base import db_decorator
-from databases.models.project import Project
-from databases.models.project_note import ProjectNote
-from enums.project import ProjectFields
-from pydantic_models.services.project import ProjectNotesResult
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
+from db.base import db_decorator
+from db.models.project import Project
+from db.models.project_note import ProjectNote
+from enums.project import ProjectFields
+from pydantic_models.services.project import ProjectNotesResult
 from services.project.project import get_project
 
 
@@ -61,7 +61,7 @@ def add_project_note(
 ):
     if project_id is None:
         if project is None:
-            raise Exception("Either proejct_id or project must be provided")
+            raise Exception("Either project_id or project must be provided")
         db_project = get_project(
             db=db,
             name=project,

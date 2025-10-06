@@ -1,10 +1,10 @@
 import json
 from typing import Optional, Self, Type
-from databases.base import db_decorator
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.sql.expression import ColumnOperators
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy import Column, DateTime, desc, inspect, text
+from db.base import db_decorator
 
 
 class CustomBase:
@@ -73,7 +73,8 @@ class CustomBase:
         data: dict,
     ):
         """
-        Fetches an instance by filters, updates its fields with data, saves to db, and returns the object.
+        Fetches an instance by filters, updates its fields with data,
+        saves to db, and returns the object.
         """
         instance = cls.filter(db=db, **filters)
         if not instance:
@@ -81,23 +82,6 @@ class CustomBase:
         instance.update(**data)
         instance.save_to_db(db=db)
         return instance
-
-    @classmethod
-    @db_decorator
-    def update_by_id(
-        cls,
-        db: Session,
-        id: int,
-        data: dict,
-    ):
-        """
-        Updates an instance by its id using update_instance.
-        """
-        return cls.update_instance(
-            db=db,
-            filters={"id": id},
-            data=data,
-        )
 
     @classmethod
     def all_columns(cls):

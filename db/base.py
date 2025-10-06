@@ -11,8 +11,8 @@ def get_db() -> Session:
         connect_args={"check_same_thread": False},
         echo=True,
     )
-    SessionLocal = sessionmaker(bind=engine)
-    db = SessionLocal()
+    session_local = sessionmaker(bind=engine)
+    db = session_local()
     return db
 
 

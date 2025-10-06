@@ -7,9 +7,9 @@ from telegram.ext import (
 )
 from enums.message_handlers.pending_project_note import ProjectNoteState
 from enums.project_note import ProjectNoteStatus
+from enums.settings import BotCommandType
 from pydantic_models.services.project import ProjectNoteResult
 from exceptions.finish_conversation import FinishConversation
-from enums.settings import BotCommandType
 from message_handlers.base import BaseMessageHandler, state_handler
 from services.project.project import get_all_project_labels, get_project
 from services.project.project_note import get_project_notes_result

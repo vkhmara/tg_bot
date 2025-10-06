@@ -24,6 +24,6 @@ def main(token: str):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    with open("tg_token.txt", "r") as f:
-        token = f.read().strip()
-    main(token=token)
+    with open("tg_token.txt", "r", encoding="utf-8") as f:
+        tg_token = f.read().strip()
+    main(token=tg_token)

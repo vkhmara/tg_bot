@@ -17,9 +17,7 @@ class JobSchedulerMessageHandler(BaseMessageHandler):
         context: ContextTypes.DEFAULT_TYPE,
     ):
         chat_id = update.effective_chat.id
-        await update.message.reply_text(
-            "Pending notification job was scheduled"
-        )
+        await update.message.reply_text("Pending notification job was scheduled")
 
         if not context.job_queue:
             print("context doesn't contain job_queue attribute")

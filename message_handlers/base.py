@@ -78,6 +78,7 @@ async def set_commands(app):
         BotCommandType.CANCEL: "Cancel conversation",
         BotCommandType.PENDING_NOTES: "Pending project notes",
         BotCommandType.RESOLVE_NOTE: "Mark note as resolved",
+        BotCommandType.SCHEDULE_JOBS: "Subscribe on pending notes notifications",
     }
     commands = [
         BotCommand(

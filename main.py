@@ -15,9 +15,9 @@ def main(token: str):
             message_handler.get_handlers() for message_handler in message_handlers
         )
     )
+    # Cannot be replaced with asyncio.run(set_commands(app))
+    #  because of RuntimeError('Event loop is closed')
     asyncio.get_event_loop().run_until_complete(set_commands(app))
-    # TODO: investigate why this causes the error
-    # asyncio.run(set_commands(app))
 
     app.run_polling()
 

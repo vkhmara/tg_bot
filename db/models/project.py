@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, JSON
+from sqlalchemy import Boolean, Column, Integer, String, Text, JSON
 from db.base_model import Base
 
 
@@ -10,6 +10,7 @@ class Project(Base):
     ticket = Column(String(20), nullable=False)
     comment = Column(Text)
     extra_info = Column(JSON)
+    is_deleted = Column(Boolean, default=False)
 
     @property
     def project_label(self):

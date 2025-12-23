@@ -6,6 +6,7 @@ class BotCommandType(str, Enum):
     ADD_NOTE = "add_note"
     ADD_PROJECT = "add_project"
     CANCEL = "cancel"
+    DELETE_PROJECT = "delete_project"
     HELP = "help"
     PENDING_NOTES = "pending_notes"
     RESOLVE_NOTE = "resolve_note"

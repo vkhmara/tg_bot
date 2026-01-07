@@ -14,12 +14,20 @@ def get_project_notes(
     project_id: int = None,
     project_note_status: str = None,
 ) -> list[ProjectNote]:
-    return ProjectNote.filter(
-        db=db,
-        many=True,
+    criterion = ProjectNote.get_filters(
         project_id=project_id,
         status=project_note_status,
+    ) + [Project.is_deleted.is_not(True)]
+    filter_query = (
+        db.query(ProjectNote)
+        .join(
+            Project,
+            ProjectNote.project_id == Project.id,
+        )
+        .filter(*criterion)
+        .order_by(desc(ProjectNote.created_date))
     )
+    return filter_query.all()
 
 
 @db_decorator
@@ -28,7 +36,10 @@ def get_project_notes_result(
     project_id: int = None,
     project_note_status: str = None,
 ) -> ProjectNotesResult:
-    criterion = [ProjectNote.status == project_note_status]
+    criterion = [
+        ProjectNote.status == project_note_status,
+        Project.is_deleted.is_not(True),
+    ]
     if project_id is not None:
         criterion.append(Project.id == project_id)
 

@@ -71,13 +71,14 @@ class BaseMessageHandler:
 
 async def set_commands(app):
     command_descriptions = {
-        BotCommandType.ADD_PROJECT: "Add project",
-        BotCommandType.ADD_NOTE: "Add project note",
+        BotCommandType.ADD_PROJECT: "Add a project",
+        BotCommandType.ADD_NOTE: "Add a project note",
         BotCommandType.ADD_MULTIPLE_NOTES: "Add multiple notes for a project",
+        BotCommandType.CANCEL: "Cancel the conversation",
+        BotCommandType.DELETE_PROJECT: "Delete a project",
         BotCommandType.HELP: "Help",
-        BotCommandType.CANCEL: "Cancel conversation",
         BotCommandType.PENDING_NOTES: "Pending project notes",
-        BotCommandType.RESOLVE_NOTE: "Mark note as resolved",
+        BotCommandType.RESOLVE_NOTE: "Mark the note as resolved",
         BotCommandType.SCHEDULE_JOBS: "Subscribe on pending notes notifications",
     }
     commands = [

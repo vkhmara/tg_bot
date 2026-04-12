@@ -23,9 +23,6 @@ def db_decorator(func):
             return func(*args, **kwargs)
         with get_db() as db_conn:
             kwargs["db"] = db_conn
-            return func(
-                *args,
-                **kwargs,
-            )
+            return func(*args, **kwargs)
 
     return inner_func

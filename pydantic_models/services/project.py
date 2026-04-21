@@ -13,8 +13,8 @@ class ProjectNoteResult(BaseModel):
     created_date: datetime
 
     class Config:
-        validate_by_name = True
-        from_attributes = True
+        orm_mode = True
+        allow_population_by_field_name = True
         arbitrary_types_allowed = True
 
     # TODO: probably move to another file/class/method to store

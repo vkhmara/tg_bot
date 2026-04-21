@@ -1,7 +1,8 @@
 alembic==1.16.4
 black==25.9.0
 openpyxl==3.1.5
-pydantic==2.11.7
+# pydantic v1 for termux hosting
+pydantic==1.10.15
 pylint==3.3.9
 python-telegram-bot==22.4
 python-telegram-bot[job-queue]==22.4

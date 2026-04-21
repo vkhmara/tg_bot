@@ -6,9 +6,22 @@ from message_handlers.base import set_commands
 from utilities.list import join_lists
 
 
-def main(token: str):
+def _run_migrations():
+    from alembic.config import Config
+    from alembic import command
+
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+    _run_migrations()
+    with open("tg_token.txt", "r", encoding="utf-8") as f:
+        tg_token = f.read().strip()
+
     message_handlers = get_all_message_handlers()
-    app: Application = Application.builder().token(token).build()
+    app: Application = Application.builder().token(tg_token).build()
 
     app.add_handlers(
         join_lists(
@@ -23,7 +36,4 @@ def main(token: str):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    with open("tg_token.txt", "r", encoding="utf-8") as f:
-        tg_token = f.read().strip()
-    main(token=tg_token)
+    main()
